@@ -1,16 +1,19 @@
 (ns clojure-course-task02.core
   (:gen-class))
 
-(defn find-files [file-name path]
-  "Implement searching for a file using his name as a regexp."
+(defn filter-files [pred path]
   (let [root (clojure.java.io/as-file path)
-        f #(find-files file-name %)
-        file-name-re (re-pattern file-name)]
+        f #(filter-files pred %)]
     (if 
       (.isDirectory root)
-        (flatten (pmap f (.listFiles root)))
+        (pmap f (.listFiles root))
         (let [name (.getName root)]
-          (if (re-matches file-name-re name) [name] [])))))
+          (if (pred name) [name] [])))))
+
+(defn find-files [file-name path]
+  "Implement searching for a file using his name as a regexp."
+  (let [file-name-re (re-pattern file-name)]
+    (flatten (filter-files #(re-matches file-name-re %) path))))
 
 (defn usage []
   (println "Usage: $ run.sh file_name path"))
